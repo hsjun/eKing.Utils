@@ -237,13 +237,13 @@ namespace eKing.Utils.Cryptography
             {
                 byte[] rgbSignature = Convert.FromBase64String(cypherText);
 
-
                 byte[] rgbHash = Convert.FromBase64String(GetHash(plainText));
 
                 RSACryptoServiceProvider provider = new RSACryptoServiceProvider();
                 provider.FromXmlString(publicKey);
 
-                return provider.VerifyData(rgbHash, "MD5", rgbSignature);
+                //return provider.VerifyHash(rgbHash, "MD5", rgbSignature);
+                //return provider.VerifyData(Encoding.UTF8.GetBytes(plainText), CryptoConfig.MapNameToOID("MD5"), rgbSignature);
 
                 RSAPKCS1SignatureDeformatter deformatter = new RSAPKCS1SignatureDeformatter(provider);
                 deformatter.SetHashAlgorithm("MD5");
