@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Xml;
 
@@ -166,6 +167,9 @@ namespace eKing.Utils.Cryptography
         }
 
         #region 签名验证
+        //http://www.cnblogs.com/lzjsky/archive/2011/04/02/2003640.htm
+
+
         //public string GetStrMd5(string ConvertString)
         //{
         //    string strBodyBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(ConvertString));
@@ -244,6 +248,7 @@ namespace eKing.Utils.Cryptography
 
                 //return provider.VerifyHash(rgbHash, "MD5", rgbSignature);
                 //return provider.VerifyData(Encoding.UTF8.GetBytes(plainText), CryptoConfig.MapNameToOID("MD5"), rgbSignature);
+                //return provider.VerifyData(Encoding.UTF8.GetBytes(plainText), "MD5", rgbSignature);
 
                 RSAPKCS1SignatureDeformatter deformatter = new RSAPKCS1SignatureDeformatter(provider);
                 deformatter.SetHashAlgorithm("MD5");
