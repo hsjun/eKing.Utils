@@ -178,7 +178,7 @@ namespace eKing.Utils.Cryptography
         /// </summary>
         /// <param name="source">待加密数据</param>
         /// <returns>加密后数据</returns> 
-        public static string GetHash(string source, string encodingName = "UTF8")
+        public static string GetHash(string source, string encodingName = "UTF-8")
         {
             byte[] bytes = Encoding
                 .GetEncoding(string.IsNullOrEmpty(encodingName) ? Encoding.Default.EncodingName : encodingName)
@@ -243,6 +243,8 @@ namespace eKing.Utils.Cryptography
                 RSACryptoServiceProvider provider = new RSACryptoServiceProvider();
                 provider.FromXmlString(publicKey);
 
+                return provider.VerifyData(rgbHash, "MD5", rgbSignature);
+
                 RSAPKCS1SignatureDeformatter deformatter = new RSAPKCS1SignatureDeformatter(provider);
                 deformatter.SetHashAlgorithm("MD5");
                 //formatter.SetHashAlgorithm("SHA256");
@@ -287,6 +289,65 @@ namespace eKing.Utils.Cryptography
             RSAParameters para = new RSAParameters();
             para.Modulus = pemModulus;
             para.Exponent = pemPublicExponent;
+            return para;
+        }
+
+        private static RSAParameters ConvertFromPrivateKey(string pemFileConent)
+        {
+            byte[] keyData = Convert.FromBase64String(pemFileConent);
+            if (keyData.Length < 609)
+            {
+                throw new ArgumentException("pem file content is incorrect.");
+            }
+
+            int index = 11;
+            byte[] pemModulus = new byte[128];
+            Array.Copy(keyData, index, pemModulus, 0, 128);
+
+            index += 128;
+            index += 2;//141  
+            byte[] pemPublicExponent = new byte[3];
+            Array.Copy(keyData, index, pemPublicExponent, 0, 3);
+
+            index += 3;
+            index += 4;//148  
+            byte[] pemPrivateExponent = new byte[128];
+            Array.Copy(keyData, index, pemPrivateExponent, 0, 128);
+
+            index += 128;
+            index += ((int)keyData[index + 1] == 64 ? 2 : 3);//279  
+            byte[] pemPrime1 = new byte[64];
+            Array.Copy(keyData, index, pemPrime1, 0, 64);
+
+            index += 64;
+            index += ((int)keyData[index + 1] == 64 ? 2 : 3);//346  
+            byte[] pemPrime2 = new byte[64];
+            Array.Copy(keyData, index, pemPrime2, 0, 64);
+
+            index += 64;
+            index += ((int)keyData[index + 1] == 64 ? 2 : 3);//412/413  
+            byte[] pemExponent1 = new byte[64];
+            Array.Copy(keyData, index, pemExponent1, 0, 64);
+
+            index += 64;
+            index += ((int)keyData[index + 1] == 64 ? 2 : 3);//479/480  
+            byte[] pemExponent2 = new byte[64];
+            Array.Copy(keyData, index, pemExponent2, 0, 64);
+
+            index += 64;
+            index += ((int)keyData[index + 1] == 64 ? 2 : 3);//545/546  
+            byte[] pemCoefficient = new byte[64];
+            Array.Copy(keyData, index, pemCoefficient, 0, 64);
+
+            RSAParameters para = new RSAParameters();
+            para.Modulus = pemModulus;
+            para.Exponent = pemPublicExponent;
+            para.D = pemPrivateExponent;
+            para.P = pemPrime1;
+            para.Q = pemPrime2;
+            para.DP = pemExponent1;
+            para.DQ = pemExponent2;
+            para.InverseQ = pemCoefficient;
             return para;
         }
         #endregion
