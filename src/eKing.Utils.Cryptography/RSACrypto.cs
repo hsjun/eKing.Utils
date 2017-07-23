@@ -213,7 +213,8 @@ namespace eKing.Utils.Cryptography
             provider.FromXmlString(privateKey);
             //或者
             //byte[] privateKeyBytes = Convert.FromBase64String(privateKey);
-            //provider.ImportCspBlob(privateKeyBytes);
+            //provider.ImportCspBlob(privateKeyBytes); //?? 报错提示：不正确的提供程序版本
+            //publicKey用的是ASN.1 DER编码，因此不能直接用ImportCspBlob（它使用另外一种格式）。
 
             RSAPKCS1SignatureFormatter formatter = new RSAPKCS1SignatureFormatter(provider);
             formatter.SetHashAlgorithm("MD5");
@@ -257,6 +258,36 @@ namespace eKing.Utils.Cryptography
                 throw ex;
             }
 
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pemFileConent"></param>
+        /// <returns></returns>
+        /// <example>
+        /// <code>
+        /// RSAParameters paraPub = ConvertFromPublicKey(publicKey);
+        /// RSACryptoServiceProvider rsaProvider = new RSACryptoServiceProvider();
+        /// rsaProvider.ImportParameters(paraPub);
+        /// </code>
+        /// </example>
+        private static RSAParameters ConvertFromPublicKey(string pemFileConent)
+        {
+            byte[] keyData = Convert.FromBase64String(pemFileConent);
+            if (keyData.Length < 162)
+            {
+                throw new ArgumentException("pem file content is incorrect.");
+            }
+            byte[] pemModulus = new byte[128];
+            byte[] pemPublicExponent = new byte[3];
+            Array.Copy(keyData, 29, pemModulus, 0, 128);
+            Array.Copy(keyData, 159, pemPublicExponent, 0, 3);
+            RSAParameters para = new RSAParameters();
+            para.Modulus = pemModulus;
+            para.Exponent = pemPublicExponent;
+            return para;
         }
         #endregion
 
