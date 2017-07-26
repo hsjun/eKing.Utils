@@ -1,0 +1,64 @@
+//https://support.microsoft.com/zh-cn/help/312906/how-to-create-keys-by-using-visual-c--net-for-use-in-forms-authenticat
+
+using System;
+using System.Text;
+using System.Security.Cryptography;
+
+namespace Crypto
+{
+    public class KeyCreator
+    {
+        public static void Main(String[] args)
+        {
+            String[] commandLineArgs = System.Environment.GetCommandLineArgs();
+            string decryptionKey = CreateKey(System.Convert.ToInt32(commandLineArgs[1]));
+            string validationKey = CreateKey(System.Convert.ToInt32(commandLineArgs[2]));
+
+            Console.WriteLine("<machineKey validationKey=\"{0}\" decryptionKey=\"{1}\" validation=\"SHA1\"/>", validationKey, decryptionKey);
+        }
+
+        static String CreateKey(int numBytes) 
+        {
+            RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
+            byte[] buff = new byte[numBytes];
+
+            rng.GetBytes(buff);
+            return BytesToHexString(buff);
+        }
+
+        static String BytesToHexString(byte[] bytes) 
+        {
+            StringBuilder hexString = new StringBuilder(64);
+
+            for (int i = 0; i < bytes.Length; i++) 
+            {
+                hexString.Append(String.Format("{0:X2}", bytes[i]));
+            }
+            return hexString.ToString();
+        }
+    }
+}
+
+
+//https://msdn.microsoft.com/zh-cn/library/ms998288.aspx
+using System;
+using System.Text;
+using System.Security;
+using System.Security.Cryptography;
+
+class App {
+  static void Main(string[] argv) {
+    int len = 128;
+    if (argv.Length > 0)
+      len = int.Parse(argv[0]);
+    byte[] buff = new byte[len/2];
+
+    RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
+    rng.GetBytes(buff);
+
+    StringBuilder sb = new StringBuilder(len);
+    for (int i=0; i<buff.Length; i++)
+      sb.Append(string.Format("{0:X2}", buff[i]));
+    Console.WriteLine(sb);
+  }
+}
